@@ -26,16 +26,16 @@ jobs:
       - name: Build .exe file
         run: |
           pyinstaller --onefile WallpaperDownloader.py
-          mkdir dist/package_output
-          move dist\WallpaperDownloader.exe dist/package_output/WallpaperDownloader.exe
+          mkdir dist\package_output
+          move dist\WallpaperDownloader.exe dist\package_output\WallpaperDownloader.exe
 
       - name: Copy DepotDownloaderMod
         run: |
-          xcopy DepotDownloaderMod dist/package_output/DepotDownloaderMod /E /I /Q /Y
+          xcopy "DepotDownloaderMod" "dist\package_output\DepotDownloaderMod" /E /I /Q /Y
 
       - name: Create ZIP package
         run: |
-          powershell Compress-Archive -Path dist/package_output/* -DestinationPath dist/WallpaperEngineDownloader.zip
+          powershell Compress-Archive -Path dist\package_output\* -DestinationPath dist\WallpaperEngineDownloader.zip
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
