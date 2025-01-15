@@ -26,68 +26,36 @@ jobs:
       - name: Build .exe file
         run: |
           pyinstaller --onefile WallpaperDownloader.py
-          mkdir dist/exe_output
-          move dist\WallpaperDownloader.exe dist\exe_output\WallpaperDownloader.exe
+          mkdir dist/package_output
+          move dist\WallpaperDownloader.exe dist/package_output/WallpaperDownloader.exe
+
+      - name: Copy DepotDownloaderMod
+        run: |
+          xcopy DepotDownloaderMod dist/package_output/DepotDownloaderMod /E /I /Q /Y
+
+      - name: Create ZIP package
+        run: |
+          powershell Compress-Archive -Path dist/package_output/* -DestinationPath dist/WallpaperEngineDownloader.zip
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
         with:
-          name: windows-exe
-          path: dist/exe_output/
-
-  build_linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip fakeroot dpkg-dev
-          pip3 install pyinstaller
-
-      - name: Build .deb package
-        run: |
-          pyinstaller --onefile WallpaperDownloader.py
-          mkdir dist/deb_output
-          mkdir -p dist/deb_output/usr/local/bin
-          cp dist/main dist/deb_output/usr/local/bin/WallpaperDownloader
-          mkdir -p dist/deb_output/DEBIAN
-          echo "Package: WallpaperDownloader" > dist/deb_output/DEBIAN/control
-          echo "Version: 1.0" >> dist/deb_output/DEBIAN/control
-          echo "Architecture: all" >> dist/deb_output/DEBIAN/control
-          echo "Maintainer: Nicolhetti nicolhetti.pj@gmail.com" >> dist/deb_output/DEBIAN/control
-          echo "Description: Este programa en Python con interfaz gráfica (GUI) permite descargar elementos del workshop de Wallpaper Engine." >> dist/deb_output/DEBIAN/control
-          dpkg-deb --build dist/deb_output dist/WallpaperDownloader.deb
-
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: linux-deb
-          path: dist/WallpaperDownloader.deb
+          name: windows-package
+          path: dist/WallpaperEngineDownloader.zip
 
   release:
-    needs: [build_windows, build_linux]
+    needs: [build_windows]
     runs-on: ubuntu-latest
     steps:
       - name: Download Windows artifact
         uses: actions/download-artifact@v3
         with:
-          name: windows-exe
+          name: windows-package
           path: artifacts/windows
-
-      - name: Download Linux artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: linux-deb
-          path: artifacts/linux
 
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            artifacts/windows/*.exe
-            artifacts/linux/*.deb
+          files: artifacts/windows/WallpaperEngineDownloader.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
