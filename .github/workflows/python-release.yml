@@ -1,0 +1,47 @@
+name: Python Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Paso 1: Comprueba el código
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Paso 2: Configura Python
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      # Paso 3: Instala dependencias necesarias
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+
+      # Paso 4: Crea el archivo .exe usando PyInstaller
+      - name: Create executable with PyInstaller
+        run: |
+          pyinstaller --onefile --distpath dist --workpath build --specpath spec WallpaperDownloader.py
+
+      # Paso 5: Crea el archivo ZIP con el .exe y otros archivos
+      - name: Create ZIP file
+        run: |
+          mkdir release
+          cp dist/WEWD.exe release/
+          cp -r * release/
+          cd release && zip -r WEWD.zip .
+
+      # Paso 6: Sube el archivo ZIP a las releases de GitHub
+      - name: Upload Release Asset
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: release/WEWD.zip
+          tag: ${{ github.ref }}
