@@ -29,7 +29,7 @@ jobs:
       # Paso 4: Crea el archivo .exe usando PyInstaller
       - name: Create executable with PyInstaller
         run: |
-          pyinstaller --onefile --distpath dist --workpath build --specpath spec WallpaperDownloader.py
+          pyinstaller --onefile --distpath dist --workpath build --specpath spec --name WEWD WallpaperDownloader.py
 
       # Paso 5: Crea el archivo ZIP con el .exe y otros archivos
       - name: Create ZIP file
