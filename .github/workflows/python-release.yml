@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir release
           cp dist/WEWD.exe release/
-          cp -r * release/
+          cp -r !(release) release/
           cd release && zip -r WEWD.zip .
 
       # Paso 6: Sube el archivo ZIP a las releases de GitHub
