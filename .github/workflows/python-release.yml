@@ -38,17 +38,17 @@ jobs:
           powershell Compress-Archive -Path dist\package_output\* -DestinationPath dist\WallpaperEngineDownloader.zip
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-package
           path: dist/WallpaperEngineDownloader.zip
 
   release:
     needs: [build_windows]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Download Windows artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: windows-package
           path: artifacts/windows
