@@ -1,48 +1,93 @@
-name: Python Release
+name: Build and Release
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 jobs:
-  build:
+  build_windows:
     runs-on: windows-latest
-
     steps:
-      # Paso 1: Comprueba el código
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # Paso 2: Configura Python
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.7'
+          python-version: 3.x
 
-      # Paso 3: Instala dependencias necesarias
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
 
-      # Paso 4: Crea el archivo .exe usando PyInstaller
-      - name: Create executable with PyInstaller
+      - name: Build .exe file
         run: |
-          pyinstaller --onefile --distpath dist --workpath build --specpath spec --name WEWD WallpaperDownloader.py
+          pyinstaller --onefile WallpaperDownloader.py
+          mkdir dist/exe_output
+          mv dist/WallpaperDownloader.exe dist/exe_output/
 
-      # Paso 5: Crea el archivo ZIP con el .exe y otros archivos
-      - name: Create ZIP file
-        run: |
-          mkdir release
-          Remove-Item -Recurse -Force release\*
-          cp dist/WEWD.exe release/
-          cp -r * release/
-          cd release && zip -r WEWD.zip .
-
-      # Paso 6: Sube el archivo ZIP a las releases de GitHub
-      - name: Upload Release Asset
-        uses: ncipollo/release-action@v1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
-          artifacts: release/WEWD.zip
-          tag: ${{ github.ref }}
+          name windows-exe
+          path dist/exe_output
+
+  build_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip fakeroot dpkg-dev
+          pip3 install pyinstaller
+
+      - name: Build .deb package
+        run: |
+          pyinstaller --onefile WallpaperDownloader.py
+          mkdir dist/deb_output
+          mkdir -p dist/deb_output/usr/local/bin
+          cp dist/main dist/deb_output/usr/local/bin/WallpaperDownloader
+          mkdir -p dist/deb_output/DEBIAN
+          echo "Package: WallpaperDownloader" > dist/deb_output/DEBIAN/control
+          echo "Version: 1.0" >> dist/deb_output/DEBIAN/control
+          echo "Architecture: all" >> dist/deb_output/DEBIAN/control
+          echo "Maintainer: Nicolhetti nicolhetti.pj@gmail.com" >> dist/deb_output/DEBIAN/control
+          echo "Description: Este programa en Python con interfaz gráfica (GUI) permite descargar elementos del workshop de Wallpaper Engine." >> dist/deb_output/DEBIAN/control
+          dpkg-deb --build dist/deb_output dist/WallpaperDownloader.deb
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name linux-deb
+          path dist/WallpaperDownloader.deb
+
+  release:
+    needs: [build_windows, build_linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-exe
+          path: artifacts/windows
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: linux-deb
+          path: artifacts/linux
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/windows/*.exe
+            artifacts/linux/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
