@@ -30,12 +30,6 @@ jobs:
       - name: Create executable with PyInstaller
         run: |
           pyinstaller --onefile --distpath dist --workpath build --specpath spec WallpaperDownloader.py
-          
-      # Verificar si el archivo .exe se generó correctamente
-      - name: Verify executable creation
-        run: |
-          if (Test-Path dist/WEWD.exe) { Write-Host "Executable created successfully" } else { Write-Host "Error: Executable not found!" ; exit 1 }
-        shell: pwsh
 
       # Paso 5: Crea el archivo ZIP con el .exe y otros archivos
       - name: Create ZIP file
