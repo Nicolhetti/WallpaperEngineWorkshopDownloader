@@ -10,7 +10,7 @@ Este programa en Python con interfaz gráfica (GUI) permite descargar elementos 
 - Consola integrada para mostrar el estado de las descargas.
 
 ## Requisitos
-- **[.NET 8.0 Runtime](https://aka.ms/dotnet-core-applaunch?framework=Microsoft.NETCore.App&framework_version=8.0.0&arch=x64&rid=win10-x64)**.
+- **[.NET 9.0 Runtime](https://aka.ms/dotnet-core-applaunch?framework=Microsoft.NETCore.App&framework_version=9.0.0&arch=x64&rid=win-x64&os=win10)**.
 - Python 3.7 o superior.
 - Dependencias:
   - Tkinter (incluido en la mayoría de las distribuciones de Python).
